@@ -65,4 +65,4 @@ $$
 
 
 ## img
-![test img](/static/posts/test/res.png)
+![test img](/posts/test/res.png)
