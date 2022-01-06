@@ -1,4 +1,4 @@
-baseURL = 'http://www.ampontang.com'
+baseURL = 'http://ampontang.com'
 languageCode = 'ja-JP'
 title = 'Akira Hayasaka'
 theme = "paper"

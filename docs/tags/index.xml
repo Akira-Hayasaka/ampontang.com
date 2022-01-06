@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Akira Hayasaka</title>
-    <link>http://www.ampontang.com/tags/</link>
+    <link>http://ampontang.com/tags/</link>
     <description>Recent content in Tags on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="http://www.ampontang.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="http://ampontang.com/tags/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
