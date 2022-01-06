@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>markdown on Akira Hayasaka</title>
-    <link>http://ampontang.com/tags/markdown/</link>
+    <link>https://akira-hayasaka.github.io/ampontang.com/tags/markdown/</link>
     <description>Recent content in markdown on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="http://ampontang.com/tags/markdown/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/ampontang.com/tags/markdown/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>テスト1</title>
-      <link>http://ampontang.com/posts/test/</link>
+      <link>https://akira-hayasaka.github.io/ampontang.com/posts/test/</link>
       <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
       
-      <guid>http://ampontang.com/posts/test/</guid>
+      <guid>https://akira-hayasaka.github.io/ampontang.com/posts/test/</guid>
       <description>テスト
 Headings blah
 H1 blah
