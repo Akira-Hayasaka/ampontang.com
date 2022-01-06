@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>test on Akira Hayasaka</title>
+    <link>http://www.ampontang.com/tags/test/</link>
+    <description>Recent content in test on Akira Hayasaka</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja-JP</language>
+    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="http://www.ampontang.com/tags/test/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>テスト1</title>
+      <link>http://www.ampontang.com/posts/test/</link>
+      <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
+      
+      <guid>http://www.ampontang.com/posts/test/</guid>
+      <description>テスト
+Headings blah
+H1 blah
+H6 blah
+Paragraph blah
+Tables    Name Age     Bob 27   Alice 23    Inline Markdown within tables    Italics Bold Code     italics bold code    Code Blocks Code block with backticks int main() { int y = SOME_MACRO_REFERENCE; int x = 5 + 6; cout &amp;lt;&amp;lt; &amp;#34;Hello World!</description>
+    </item>
+    
+  </channel>
+</rss>

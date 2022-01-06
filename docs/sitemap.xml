@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://www.ampontang.com/about/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/tags/markdown/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/posts/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/tags/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/tags/test/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/work/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/posts/test/</loc>
+    <lastmod>2021-01-06T12:23:01+09:00</lastmod>
+  </url><url>
+    <loc>http://www.ampontang.com/categories/</loc>
+  </url>
+</urlset>

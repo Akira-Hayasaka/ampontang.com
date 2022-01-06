@@ -1,0 +1,14 @@
+baseURL = 'http://www.ampontang.com'
+languageCode = 'ja-JP'
+title = 'Akira Hayasaka'
+theme = "paper"
+publishDir = "docs"
+canonifyurls = true
+
+[params]
+  disableHLJS = true  
+  twitter = 'Akira_At_Asia'              
+  github = 'Akira-Hayasaka'                
+  instagram = 'akira.hysk'    
+  math = true
+  enableEmoji = true
