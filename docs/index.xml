@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Akira Hayasaka</title>
-    <link>https://akira-hayasaka.github.io/ampontang.com/</link>
+    <link>https://akira-hayasaka.github.io/web/</link>
     <description>Recent content on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/ampontang.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>about</title>
-      <link>https://akira-hayasaka.github.io/ampontang.com/about/</link>
+      <link>https://akira-hayasaka.github.io/web/about/</link>
       <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
       
-      <guid>https://akira-hayasaka.github.io/ampontang.com/about/</guid>
+      <guid>https://akira-hayasaka.github.io/web/about/</guid>
       <description>Akira Hayasaka
 freelance programmer / engineer / digital craft(manship).
 アート文脈への技術応用に興味があります。</description>
@@ -20,10 +20,10 @@ freelance programmer / engineer / digital craft(manship).
     
     <item>
       <title>work</title>
-      <link>https://akira-hayasaka.github.io/ampontang.com/work/</link>
+      <link>https://akira-hayasaka.github.io/web/work/</link>
       <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
       
-      <guid>https://akira-hayasaka.github.io/ampontang.com/work/</guid>
+      <guid>https://akira-hayasaka.github.io/web/work/</guid>
       <description>君も博士になれる展 https://lab-wakabadai.com/kimimohakase/
 鴨川シーワールド ベルーガパフォーマンスシアター http://www.kamogawa-seaworld.jp/aquarium/program/beluga.html http://www.kids-event.jp/report/10603/
 ベルーガが超音波で空間や物を認識している様子が見られる。 人間の可聴域をはるかに超えた、超音波による「エコロケーション（反響定位）」をリアルタイムにキャプチャ・ビジュアライズ（可視化）し、水槽上部のモニターに表示するシステムを制作。
@@ -39,10 +39,10 @@ JR東京駅のコンコース（グランルーフ）に3100本のLED灯体を�
     
     <item>
       <title>テスト1</title>
-      <link>https://akira-hayasaka.github.io/ampontang.com/posts/test/</link>
+      <link>https://akira-hayasaka.github.io/web/posts/test/</link>
       <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
       
-      <guid>https://akira-hayasaka.github.io/ampontang.com/posts/test/</guid>
+      <guid>https://akira-hayasaka.github.io/web/posts/test/</guid>
       <description>テスト
 Headings blah
 H1 blah
