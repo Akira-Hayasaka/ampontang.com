@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>numpyro on Akira Hayasaka</title>
+    <link>https://akira-hayasaka.github.io/web/tags/numpyro/</link>
+    <description>Recent content in numpyro on Akira Hayasaka</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja-JP</language>
+    <lastBuildDate>Fri, 07 Jan 2022 14:32:23 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/numpyro/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>numpyroでベイズ線形回帰</title>
+      <link>https://akira-hayasaka.github.io/web/posts/bayesian_linreg/</link>
+      <pubDate>Fri, 07 Jan 2022 14:32:23 +0900</pubDate>
+      
+      <guid>https://akira-hayasaka.github.io/web/posts/bayesian_linreg/</guid>
+      <description>線形回帰は全ての基本です。
+変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
+model $$ \begin{align*} y_n &amp;amp; \in \mathbb{R} \qquad (output) \\ x_n &amp;amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp;amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp;amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
+$$ y_n = \textbf{w}^T\textbf{x}_n + \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
+$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
+$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
+scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result.</description>
+    </item>
+    
+  </channel>
+</rss>

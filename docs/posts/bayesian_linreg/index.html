@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="ja-JP">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  
+  <title>numpyroでベイズ線形回帰 - Akira Hayasaka</title>
+
+  
+  
+  <meta name="description" content="線形回帰は全ての基本です。
+変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
+model $$ \begin{align*} y_n &amp; \in \mathbb{R} \qquad (output) \\ x_n &amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
+$$ y_n = \textbf{w}^T\textbf{x}_n &#43; \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
+$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
+$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
+scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result." />
+  <meta name="author" content="akira" />
+  
+
+  
+  
+  
+  
+  
+  
+  <link rel="preload stylesheet" as="style" href="https://akira-hayasaka.github.io/web/app.min.css" />
+
+  
+
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/theme.png" />
+
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/twitter.svg" />
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/github.svg" />
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/instagram.svg" />
+  
+
+  
+  <link rel="icon" href="https://akira-hayasaka.github.io/web/favicon.ico" />
+  <link rel="apple-touch-icon" href="https://akira-hayasaka.github.io/web/apple-touch-icon.png" />
+
+  
+  <meta name="generator" content="Hugo 0.91.2" />
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="numpyroでベイズ線形回帰" />
+<meta property="og:description" content="線形回帰は全ての基本です。
+変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
+model $$ \begin{align*} y_n &amp; \in \mathbb{R} \qquad (output) \\ x_n &amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
+$$ y_n = \textbf{w}^T\textbf{x}_n &#43; \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
+$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
+$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
+scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-01-07T14:32:23+09:00" />
+<meta property="article:modified_time" content="2022-01-07T14:32:23+09:00" />
+
+
+  
+  <meta itemprop="name" content="numpyroでベイズ線形回帰">
+<meta itemprop="description" content="線形回帰は全ての基本です。
+変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
+model $$ \begin{align*} y_n &amp; \in \mathbb{R} \qquad (output) \\ x_n &amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
+$$ y_n = \textbf{w}^T\textbf{x}_n &#43; \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
+$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
+$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
+scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result."><meta itemprop="datePublished" content="2022-01-07T14:32:23+09:00" />
+<meta itemprop="dateModified" content="2022-01-07T14:32:23+09:00" />
+<meta itemprop="wordCount" content="820">
+<meta itemprop="keywords" content="統計的推測,numpyro," />
+  
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="numpyroでベイズ線形回帰"/>
+<meta name="twitter:description" content="線形回帰は全ての基本です。
+変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
+model $$ \begin{align*} y_n &amp; \in \mathbb{R} \qquad (output) \\ x_n &amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
+$$ y_n = \textbf{w}^T\textbf{x}_n &#43; \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
+$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
+$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
+scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result."/>
+
+  
+  
+</head>
+
+
+  <body class="not-ready" data-menu="true">
+    <header class="header">
+  
+  <p class="logo">
+    <a class="site-name" href="https://akira-hayasaka.github.io/web/">Akira Hayasaka</a><a class="btn-dark"></a>
+  </p>
+  
+
+  <script>
+    let bodyClx = document.body.classList;
+    let btnDark = document.querySelector('.btn-dark');
+    let sysDark = window.matchMedia('(prefers-color-scheme: dark)');
+    let darkVal = localStorage.getItem('dark');
+
+    let setDark = (isDark) => {
+      bodyClx[isDark ? 'add' : 'remove']('dark');
+      localStorage.setItem('dark', isDark ? 'yes' : 'no');
+    };
+
+    setDark(darkVal ? darkVal === 'yes' : sysDark.matches);
+    requestAnimationFrame(() => bodyClx.remove('not-ready'));
+
+    btnDark.addEventListener('click', () => setDark(!bodyClx.contains('dark')));
+    sysDark.addEventListener('change', (event) => setDark(event.matches));
+  </script>
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false}
+            ]
+        });
+    });
+</script>
+  
+
+  
+  
+  <nav class="menu">
+    
+    <a class="" href="https://akira-hayasaka.github.io/web/about/">about</a>
+    
+    <a class="" href="https://akira-hayasaka.github.io/web/work/">work</a>
+    
+  </nav>
+  
+
+  
+  <nav class="social">
+    
+    <a
+      class="twitter"
+      style="--url: url(./twitter.svg)"
+      href="https://twitter.com/Akira_At_Asia"
+      target="_blank"
+    ></a>
+    
+    <a
+      class="github"
+      style="--url: url(./github.svg)"
+      href="https://github.com/Akira-Hayasaka"
+      target="_blank"
+    ></a>
+    
+    <a
+      class="instagram"
+      style="--url: url(./instagram.svg)"
+      href="https://instagram.com/akira.hysk"
+      target="_blank"
+    ></a>
+    
+  </nav>
+  
+</header>
+
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-title">
+    <p>
+      <time>Jan 7, 2022</time>
+      
+      <span>akira</span>
+      
+    </p>
+    <h1>numpyroでベイズ線形回帰</h1>
+  </header>
+  <section class="post-content"><p>線形回帰は全ての基本です。</p>
+<p>変分推論のロジックがわかったら、エグい<a href="https://en.wikipedia.org/wiki/Variational_Bayesian_methods#Derivation_of_q(%CE%BC)">計算</a>はライブラリを使って避けたいです。</p>
+<h1 id="model">model</h1>
+<p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/model.jpg" alt="model"></p>
+<p>$$
+\begin{align*}
+y_n &amp; \in \mathbb{R} \qquad (output) \\
+x_n &amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\
+\textbf{w} &amp; \in \mathbb{R}^M \qquad (parameter) \\
+\epsilon_n &amp; \in \mathbb{R} \qquad (noise)
+\end{align*}
+$$</p>
+<p>$$
+y_n = \textbf{w}^T\textbf{x}_n + \epsilon_n \\
+\epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1})
+$$</p>
+<p>$$
+p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1})  = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1})
+$$</p>
+<p>$$
+= Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1})
+$$</p>
+<h1 id="scipy-for-modeling">scipy for modeling</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">M <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">phi_basis_fn</span>(x):
+    result <span style="color:#f92672">=</span> []
+    result<span style="color:#f92672">.</span>append(<span style="color:#ae81ff">1.0</span>)
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(M<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>):
+        result<span style="color:#f92672">.</span>append(x <span style="color:#f92672">**</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>))
+    <span style="color:#66d9ef">return</span> jnp<span style="color:#f92672">.</span>array(result)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">model</span>(xx):
+    <span style="color:#75715e"># 正定値⾏列なので、独立</span>
+    mu_w <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.2</span>
+    alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.8</span>
+    w <span style="color:#f92672">=</span> stats<span style="color:#f92672">.</span>norm<span style="color:#f92672">.</span>rvs(loc<span style="color:#f92672">=</span>mu_w, scale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span>alpha, size<span style="color:#f92672">=</span>M)
+
+    beta <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.8</span>                  
+    yys, mus <span style="color:#f92672">=</span> [], []
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> xx:
+        mu <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>dot(w, phi_basis_fn(x))
+        yys<span style="color:#f92672">.</span>append(stats<span style="color:#f92672">.</span>norm<span style="color:#f92672">.</span>rvs(loc<span style="color:#f92672">=</span>mu, scale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span>beta, size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">0</span>])
+        mus<span style="color:#f92672">.</span>append(mu)
+    <span style="color:#66d9ef">return</span> yys, mus
+
+
+xx <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">100</span>)
+
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">5</span>):
+    _, mu <span style="color:#f92672">=</span> model(xx)
+    plt<span style="color:#f92672">.</span>plot(xx, mu)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#34;x&#34;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;mu&#34;</span>)
+plt<span style="color:#f92672">.</span>show()
+
+yy, mu <span style="color:#f92672">=</span> model(xx)
+
+plt<span style="color:#f92672">.</span>plot(xx, mu, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;mu&#34;</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, yy, c<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>], alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.4</span>, label<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;y obs&#34;</span>)
+plt<span style="color:#f92672">.</span>xlabel(<span style="color:#e6db74">&#34;x&#34;</span>)
+plt<span style="color:#f92672">.</span>ylabel(<span style="color:#e6db74">&#34;y&#34;</span>)
+plt<span style="color:#f92672">.</span>legend()
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output0.png" alt="model"></p>
+<p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output1.png" alt="model"></p>
+<h1 id="numpyro">numpyro</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">y_obs <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>array(yy)
+</code></pre></div><h2 id="model-1">model</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">model</span>(y_obs, x_data<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+    mu_w <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+    alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+    ws <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;latent_w&#34;</span>, dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>mu_w, scale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span>alpha), sample_shape<span style="color:#f92672">=</span>(M,))
+
+    N <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span> <span style="color:#66d9ef">if</span> x_data <span style="color:#f92672">==</span> <span style="color:#66d9ef">None</span> <span style="color:#66d9ef">else</span> x_data<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+    
+    beta <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
+    yys <span style="color:#f92672">=</span> []
+    <span style="color:#66d9ef">with</span> numpyro<span style="color:#f92672">.</span>plate(<span style="color:#e6db74">&#34;palte&#34;</span>, N):
+        mu <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(M):
+            mu <span style="color:#f92672">+=</span> ws[i] <span style="color:#f92672">*</span> (x_data <span style="color:#f92672">**</span> i)
+        y_sample <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;y&#34;</span>, dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>mu, scale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span>beta), sample_shape<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>,), obs<span style="color:#f92672">=</span>y_obs)
+        yys<span style="color:#f92672">.</span>append(y_sample)
+    <span style="color:#66d9ef">return</span> yys
+
+prior_model_trace <span style="color:#f92672">=</span> handlers<span style="color:#f92672">.</span>trace(handlers<span style="color:#f92672">.</span>seed(model, key))
+prior_model_exec <span style="color:#f92672">=</span> prior_model_trace<span style="color:#f92672">.</span>get_trace(y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+y <span style="color:#f92672">=</span> prior_model_exec[<span style="color:#e6db74">&#34;y&#34;</span>][<span style="color:#e6db74">&#34;value&#34;</span>]
+
+plt<span style="color:#f92672">.</span>scatter(xx, y)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output2.png" alt="model"></p>
+<h3 id="mcmc">MCMC</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">kernel <span style="color:#f92672">=</span> NUTS(model)
+mcmc <span style="color:#f92672">=</span> MCMC(kernel, num_warmup<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, num_samples<span style="color:#f92672">=</span><span style="color:#ae81ff">2000</span>)
+mcmc<span style="color:#f92672">.</span>run(key, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+mcmc<span style="color:#f92672">.</span>print_summary()
+
+samples <span style="color:#f92672">=</span> mcmc<span style="color:#f92672">.</span>get_samples()
+predictive <span style="color:#f92672">=</span> Predictive(model, samples)
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, <span style="color:#66d9ef">None</span>, idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output3.png" alt="model"></p>
+<h3 id="svi">SVI</h3>
+<h4 id="map">MAP</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoDelta(model)
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">5000</span>, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+predictive <span style="color:#f92672">=</span> Predictive(model<span style="color:#f92672">=</span>model, guide<span style="color:#f92672">=</span>guide, params<span style="color:#f92672">=</span>params, num_samples<span style="color:#f92672">=</span>idx_pts<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, y_obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, x_data<span style="color:#f92672">=</span>idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output4.png" alt="model"></p>
+<h4 id="autonormal">AutoNormal</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoNormal(model)
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">15000</span>, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+predictive <span style="color:#f92672">=</span> Predictive(model<span style="color:#f92672">=</span>model, guide<span style="color:#f92672">=</span>guide, params<span style="color:#f92672">=</span>params, num_samples<span style="color:#f92672">=</span>idx_pts<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, y_obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, x_data<span style="color:#f92672">=</span>idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output5.png" alt="model"></p>
+<h4 id="autodiagonalnormal">AutoDiagonalNormal</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoDiagonalNormal(model)
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">15000</span>, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+predictive <span style="color:#f92672">=</span> Predictive(model<span style="color:#f92672">=</span>model, guide<span style="color:#f92672">=</span>guide, params<span style="color:#f92672">=</span>params, num_samples<span style="color:#f92672">=</span>idx_pts<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, y_obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, x_data<span style="color:#f92672">=</span>idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output6.png" alt="model"></p>
+<h4 id="autolowrankmultivariatenormal">AutoLowRankMultivariateNormal</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoLowRankMultivariateNormal(model)
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">15000</span>, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+predictive <span style="color:#f92672">=</span> Predictive(model<span style="color:#f92672">=</span>model, guide<span style="color:#f92672">=</span>guide, params<span style="color:#f92672">=</span>params, num_samples<span style="color:#f92672">=</span>idx_pts<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, y_obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, x_data<span style="color:#f92672">=</span>idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output7.png" alt="model"></p>
+<h4 id="full-guide">full guide</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">guide</span>(y_obs, x_data<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+    mu_w_q <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>param(<span style="color:#e6db74">&#34;mu_w_q&#34;</span>, <span style="color:#ae81ff">0.</span>)
+    alpha_q <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>param(<span style="color:#e6db74">&#34;alpha_q&#34;</span>, <span style="color:#ae81ff">1.</span>, constraint<span style="color:#f92672">=</span>constraints<span style="color:#f92672">.</span>positive)
+    numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;latent_w&#34;</span>, dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>mu_w_q, scale<span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span><span style="color:#f92672">/</span>alpha_q), sample_shape<span style="color:#f92672">=</span>(M,))
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">20000</span>, y_obs<span style="color:#f92672">=</span>y_obs, x_data<span style="color:#f92672">=</span>xx)
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+
+idx_pts <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>linspace(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2000</span>)
+predictive <span style="color:#f92672">=</span> Predictive(model<span style="color:#f92672">=</span>model, guide<span style="color:#f92672">=</span>guide, params<span style="color:#f92672">=</span>params, num_samples<span style="color:#f92672">=</span>idx_pts<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+
+key, subkey <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>split(key)
+pred_samples <span style="color:#f92672">=</span> predictive(subkey, y_obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, x_data<span style="color:#f92672">=</span>idx_pts)[<span style="color:#e6db74">&#34;y&#34;</span>]
+
+mean <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>mean(<span style="color:#ae81ff">0</span>)
+std <span style="color:#f92672">=</span> pred_samples<span style="color:#f92672">.</span>std(<span style="color:#ae81ff">0</span>)
+
+lower1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> std
+upper1 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> std
+lower3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+upper3 <span style="color:#f92672">=</span> mean <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">*</span>std
+
+plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">7</span>, <span style="color:#ae81ff">5</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>)
+plt<span style="color:#f92672">.</span>plot(idx_pts, mean<span style="color:#f92672">.</span>squeeze())
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower1<span style="color:#f92672">.</span>squeeze(), upper1<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>)
+plt<span style="color:#f92672">.</span>fill_between(idx_pts, lower3<span style="color:#f92672">.</span>squeeze(), upper3<span style="color:#f92672">.</span>squeeze(), alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+plt<span style="color:#f92672">.</span>scatter(xx, y_obs, color<span style="color:#f92672">=</span>Color[<span style="color:#ae81ff">0</span>])
+plt<span style="color:#f92672">.</span>legend([<span style="color:#e6db74">&#34;prediction mean&#34;</span>, 
+            <span style="color:#e6db74">&#34;68% bayes predictive interval&#34;</span>,
+            <span style="color:#e6db74">&#34;99% bayes predictive interval&#34;</span>, 
+            <span style="color:#e6db74">&#34;training data&#34;</span>])
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/output8.png" alt="model"></p>
+<h1 id="結果">結果</h1>
+<p>自前のガイドは明らかにおかしいですね。。。なんでかわからん。</p>
+</section>
+
+  
+  
+  <footer class="post-tags">
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/%E7%B5%B1%E8%A8%88%E7%9A%84%E6%8E%A8%E6%B8%AC">統計的推測</a>
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/numpyro">numpyro</a>
+    
+  </footer>
+  
+
+  
+  
+  
+  <nav class="post-nav">
+     
+    <a class="next" href="https://akira-hayasaka.github.io/web/posts/empirical_dist/"><span>経験分布とは？</span><span>→</span></a>
+    
+  </nav>
+  
+
+  
+  
+</article>
+
+</main>
+
+    <footer class="footer">
+  <p>&copy; 2022 <a href="https://akira-hayasaka.github.io/web/">Akira Hayasaka</a></p>
+  <p>Powered by <a href="https://gohugo.io/" rel="noopener" target="_blank">Hugo️️</a>️</p>
+  <p>
+    <a href="https://github.com/nanxiaobei/hugo-paper" rel="noopener" target="_blank">Paper 5.1</a>
+  </p>
+</footer>
+
+  </body>
+</html>
