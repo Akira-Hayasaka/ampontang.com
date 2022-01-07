@@ -31,7 +31,7 @@ def dirac_delta_fn(xx, sigma): val = [] for x in xx: if -(1 / (2 * sigma)) &amp;
       <guid>https://akira-hayasaka.github.io/web/about/</guid>
       <description>Akira Hayasaka
 freelance programmer / engineer / digital craft(manship).
-アート文脈への技術応用に興味があります。</description>
+アート文脈への技術応用をずっとやってきました。これからも頑張ります。</description>
     </item>
     
     <item>
