@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Akira Hayasaka</title>
-    <link>https://akira-hayasaka.github.io/web/posts/</link>
-    <description>Recent content in Posts on Akira Hayasaka</description>
+    <title>機械学習 on Akira Hayasaka</title>
+    <link>https://akira-hayasaka.github.io/web/tags/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92/</link>
+    <description>Recent content in 機械学習 on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Fri, 07 Jan 2022 12:59:05 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 07 Jan 2022 12:59:05 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>経験分布とは？</title>
       <link>https://akira-hayasaka.github.io/web/posts/empirical_dist/</link>
@@ -21,20 +21,6 @@
 サンプルが正規分布してるとして、
 import jax.numpy as jnp from jax import random import numpyro.distributions as dist import matplotlib.pyplot as plt; key = random.PRNGKey(49) normal = dist.Normal(loc=0.5, scale=1.) samples = normal.sample(key, (1000,)) plt.hist(samples) plt.show() このサンプルを確率分布にしたものが、経験分布です。なので、
 def dirac_delta_fn(xx, sigma): val = [] for x in xx: if -(1 / (2 * sigma)) &amp;lt;= x and x &amp;lt;= (1 / (2 * sigma)): val.</description>
-    </item>
-    
-    <item>
-      <title>テスト1</title>
-      <link>https://akira-hayasaka.github.io/web/posts/test/</link>
-      <pubDate>Wed, 06 Jan 2021 12:23:01 +0900</pubDate>
-      
-      <guid>https://akira-hayasaka.github.io/web/posts/test/</guid>
-      <description>テスト tttsssttt
-Headings blah
-H1 blah
-H6 blah
-Paragraph blah
-Tables    Name Age     Bob 27   Alice 23    Inline Markdown within tables    Italics Bold Code     italics bold code    Code Blocks Code block with backticks int main() { int y = SOME_MACRO_REFERENCE; int x = 5 + 6; cout &amp;lt;&amp;lt; &amp;#34;Hello World!</description>
     </item>
     
   </channel>

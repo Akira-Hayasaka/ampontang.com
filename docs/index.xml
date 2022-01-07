@@ -6,7 +6,23 @@
     <description>Recent content on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Wed, 06 Jan 2021 12:23:01 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 07 Jan 2022 12:59:05 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>経験分布とは？</title>
+      <link>https://akira-hayasaka.github.io/web/posts/empirical_dist/</link>
+      <pubDate>Fri, 07 Jan 2022 12:59:05 +0900</pubDate>
+      
+      <guid>https://akira-hayasaka.github.io/web/posts/empirical_dist/</guid>
+      <description>&amp;ldquo;The Dirac Distribution and Empirical Distribution&amp;rdquo; ↑ は、Goodfellow本 3.9.5節のタイトルです。Empirical Distribution が「経験分布」です。
+経験分布はデータのサンプル（=観測・経験）集合の確率分布です。最尤推定はつまるところ、この経験分布と想定されるモデルの分布（正規分布、ベルヌーイ、カテゴリカルなど）の間のKLダイバージェンスを最小化するように訓練することです。そしてKLダイバージェンスを最小化するということは、交差エントロピーを最小化することと同じです。（この段でMSEは経験分布とガウス分布をモデルに仮定した場合の交差エントロピーだということがわかる）（ Goodfellow本 5.5節 あたりに書いてある)
+何が言いたいかというと、経験分布とモデル分布の比較として最尤推定を捉えれば、回帰・2クラス分類・多クラス分類の”各種”誤差関数の根っこは同じになって、全部一貫して理解できるので、嬉しい、ということです。
+そんな経験分布ですが、
+ 経験分布は、 ディラック分布を構成要素としていて、 それはディラックのデルタ関数により確率密度関数として定義される  なのですが、読んでるだけだとそもそも３のディラックのデルタ関数のピンが来ない。理解のためにこんな感じかという実装をしてみました。
+サンプルが正規分布してるとして、
+import jax.numpy as jnp from jax import random import numpyro.distributions as dist import matplotlib.pyplot as plt; key = random.PRNGKey(49) normal = dist.Normal(loc=0.5, scale=1.) samples = normal.sample(key, (1000,)) plt.hist(samples) plt.show() このサンプルを確率分布にしたものが、経験分布です。なので、
+def dirac_delta_fn(xx, sigma): val = [] for x in xx: if -(1 / (2 * sigma)) &amp;lt;= x and x &amp;lt;= (1 / (2 * sigma)): val.</description>
+    </item>
+    
     <item>
       <title>about</title>
       <link>https://akira-hayasaka.github.io/web/about/</link>
