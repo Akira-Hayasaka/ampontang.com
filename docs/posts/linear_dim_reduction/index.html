@@ -105,7 +105,7 @@
 潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
 パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$"><meta itemprop="datePublished" content="2022-01-09T14:23:39+09:00" />
 <meta itemprop="dateModified" content="2022-01-09T14:23:39+09:00" />
-<meta itemprop="wordCount" content="472">
+<meta itemprop="wordCount" content="482">
 <meta itemprop="keywords" content="統計的推測,numpyro,機械学習,潜在変数,latent space," />
   
   <meta name="twitter:card" content="summary"/>
@@ -356,9 +356,9 @@ fig <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>
     plt<span style="color:#f92672">.</span>grid(<span style="color:#66d9ef">None</span>)
 plt<span style="color:#f92672">.</span>show()
 </code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output0.png" alt="model"></p>
-<h3 id="reduce-4096-to-0005-20">reduce 4096 to 0.005% (20)</h3>
+<h3 id="reduce-4096-to-9">reduce 4096 to 9</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">D <span style="color:#f92672">=</span> imgs<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]
-M <span style="color:#f92672">=</span> int(round(imgs<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.005</span>))
+M <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>
 print(<span style="color:#e6db74">&#34;reduce&#34;</span>, D, <span style="color:#e6db74">&#34;to&#34;</span>, M)
 </code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoDelta(model)
 
@@ -389,6 +389,11 @@ fig <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>
 plt<span style="color:#f92672">.</span>gray()    
 plt<span style="color:#f92672">.</span>show()
 </code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output1.png" alt="model"></p>
+<h2 id="解釈">解釈</h2>
+<p>$W$が(9, 4096)、$x_i$が(9, 1)なので、$N(\textbf{y}_n | \textbf{W}^T \textbf{x}_n + \mu, \sigma^2_y)$で、4096次元を9次元にエンコードし、そのコードから4096次元をデコードしました。</p>
+<p>ただこの場合、$W$の役割がよくわからない。$X$は各$x_i$に顔画像一枚のなんらかの情報をエンコードしてるんだろうけど、データ全体で共有される$W$は何を符号化したものなのか。（教えていただけると嬉しいです。）</p>
+<p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output_w.png" alt="model"></p>
+<p>↑ が$W$を画像として表示したものです。それぞれの顔の特徴らしきものが見えるんだけど、、、</p>
 </section>
 
   

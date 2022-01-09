@@ -169,11 +169,11 @@ plt.show()
 ```
 ![model](/posts/linear_dim_reduction/output0.png)
 
-### reduce 4096 to 0.005% (20)
+### reduce 4096 to 9
 
 ```python
 D = imgs.shape[1]
-M = int(round(imgs.shape[1] * 0.005))
+M = 9
 print("reduce", D, "to", M)
 ```
 
@@ -214,3 +214,12 @@ plt.show()
 
 ![model](/posts/linear_dim_reduction/output1.png)
 
+## 解釈
+
+$W$が(9, 4096)、$x_i$が(9, 1)なので、$N(\textbf{y}_n | \textbf{W}^T \textbf{x}_n + \mu, \sigma^2_y)$で、4096次元を9次元にエンコードし、そのコードから4096次元をデコードしました。
+
+ただこの場合、$W$の役割がよくわからない。$X$は各$x_i$に顔画像一枚のなんらかの情報をエンコードしてるんだろうけど、データ全体で共有される$W$は何を符号化したものなのか。（教えていただけると嬉しいです。）
+
+![model](/posts/linear_dim_reduction/output_w.png)
+
+↑ が$W$を画像として表示したものです。それぞれの顔の特徴らしきものが見えるんだけど、、、
