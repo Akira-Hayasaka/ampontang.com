@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="ja-JP">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  
+  <title>線形因子モデル - Akira Hayasaka</title>
+
+  
+  
+  <meta name="description" content="線形因子モデル 線形因子モデルは、goodfellow本ではその後に続く深層生成モデルの、須山本では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、PRMLの12章を参考にしています。
+線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。
+ PPCA, factor analysisは大体これと同じ ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う  ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。
+潜在変数の解釈 潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、
+ ベイズ系の統計推測での潜在変数 NNが隠れ層で学習する多様体 オートエンコーダの隠れ層 スパースコーディングの成果物 教師なし学習で事前学習する（していた）際の目的 CNNのフィルタが学習するもの RNNが時系列で共有するもの（パラメータシェアリング）  などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。
+この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。
+実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
+潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
+パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$" />
+  <meta name="author" content="akira" />
+  
+
+  
+  
+  
+  
+  
+  
+  <link rel="preload stylesheet" as="style" href="https://akira-hayasaka.github.io/web/app.min.css" />
+
+  
+
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/theme.png" />
+
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/twitter.svg" />
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/github.svg" />
+  
+  <link rel="preload" as="image" href="https://akira-hayasaka.github.io/web/instagram.svg" />
+  
+
+  
+  <link rel="icon" href="https://akira-hayasaka.github.io/web/favicon.ico" />
+  <link rel="apple-touch-icon" href="https://akira-hayasaka.github.io/web/apple-touch-icon.png" />
+
+  
+  <meta name="generator" content="Hugo 0.91.2" />
+
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="線形因子モデル" />
+<meta property="og:description" content="線形因子モデル 線形因子モデルは、goodfellow本ではその後に続く深層生成モデルの、須山本では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、PRMLの12章を参考にしています。
+線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。
+ PPCA, factor analysisは大体これと同じ ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う  ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。
+潜在変数の解釈 潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、
+ ベイズ系の統計推測での潜在変数 NNが隠れ層で学習する多様体 オートエンコーダの隠れ層 スパースコーディングの成果物 教師なし学習で事前学習する（していた）際の目的 CNNのフィルタが学習するもの RNNが時系列で共有するもの（パラメータシェアリング）  などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。
+この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。
+実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
+潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
+パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-01-09T14:23:39+09:00" />
+<meta property="article:modified_time" content="2022-01-09T14:23:39+09:00" />
+
+
+  
+  <meta itemprop="name" content="線形因子モデル">
+<meta itemprop="description" content="線形因子モデル 線形因子モデルは、goodfellow本ではその後に続く深層生成モデルの、須山本では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、PRMLの12章を参考にしています。
+線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。
+ PPCA, factor analysisは大体これと同じ ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う  ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。
+潜在変数の解釈 潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、
+ ベイズ系の統計推測での潜在変数 NNが隠れ層で学習する多様体 オートエンコーダの隠れ層 スパースコーディングの成果物 教師なし学習で事前学習する（していた）際の目的 CNNのフィルタが学習するもの RNNが時系列で共有するもの（パラメータシェアリング）  などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。
+この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。
+実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
+潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
+パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$"><meta itemprop="datePublished" content="2022-01-09T14:23:39+09:00" />
+<meta itemprop="dateModified" content="2022-01-09T14:23:39+09:00" />
+<meta itemprop="wordCount" content="472">
+<meta itemprop="keywords" content="統計的推測,numpyro,機械学習,潜在変数,latent space," />
+  
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="線形因子モデル"/>
+<meta name="twitter:description" content="線形因子モデル 線形因子モデルは、goodfellow本ではその後に続く深層生成モデルの、須山本では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、PRMLの12章を参考にしています。
+線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。
+ PPCA, factor analysisは大体これと同じ ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う  ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。
+潜在変数の解釈 潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、
+ ベイズ系の統計推測での潜在変数 NNが隠れ層で学習する多様体 オートエンコーダの隠れ層 スパースコーディングの成果物 教師なし学習で事前学習する（していた）際の目的 CNNのフィルタが学習するもの RNNが時系列で共有するもの（パラメータシェアリング）  などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。
+この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。
+実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
+潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
+パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$"/>
+
+  
+  
+</head>
+
+
+  <body class="not-ready" data-menu="true">
+    <header class="header">
+  
+  <p class="logo">
+    <a class="site-name" href="https://akira-hayasaka.github.io/web/">Akira Hayasaka</a><a class="btn-dark"></a>
+  </p>
+  
+
+  <script>
+    let bodyClx = document.body.classList;
+    let btnDark = document.querySelector('.btn-dark');
+    let sysDark = window.matchMedia('(prefers-color-scheme: dark)');
+    let darkVal = localStorage.getItem('dark');
+
+    let setDark = (isDark) => {
+      bodyClx[isDark ? 'add' : 'remove']('dark');
+      localStorage.setItem('dark', isDark ? 'yes' : 'no');
+    };
+
+    setDark(darkVal ? darkVal === 'yes' : sysDark.matches);
+    requestAnimationFrame(() => bodyClx.remove('not-ready'));
+
+    btnDark.addEventListener('click', () => setDark(!bodyClx.contains('dark')));
+    sysDark.addEventListener('change', (event) => setDark(event.matches));
+  </script>
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false}
+            ]
+        });
+    });
+</script>
+  
+
+  
+  
+  <nav class="menu">
+    
+    <a class="" href="https://akira-hayasaka.github.io/web/about/">about</a>
+    
+    <a class="" href="https://akira-hayasaka.github.io/web/work/">work</a>
+    
+  </nav>
+  
+
+  
+  <nav class="social">
+    
+    <a
+      class="twitter"
+      style="--url: url(./twitter.svg)"
+      href="https://twitter.com/Akira_At_Asia"
+      target="_blank"
+    ></a>
+    
+    <a
+      class="github"
+      style="--url: url(./github.svg)"
+      href="https://github.com/Akira-Hayasaka"
+      target="_blank"
+    ></a>
+    
+    <a
+      class="instagram"
+      style="--url: url(./instagram.svg)"
+      href="https://instagram.com/akira.hysk"
+      target="_blank"
+    ></a>
+    
+  </nav>
+  
+</header>
+
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-title">
+    <p>
+      <time>Jan 9, 2022</time>
+      
+      <span>akira</span>
+      
+    </p>
+    <h1>線形因子モデル</h1>
+  </header>
+  <section class="post-content"><h2 id="線形因子モデル">線形因子モデル</h2>
+<p>線形因子モデルは、<a href="https://www.deeplearningbook.org/">goodfellow本</a>ではその後に続く深層生成モデルの、<a href="https://www.amazon.co.jp/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%88%E3%82%A2%E3%83%83%E3%83%97%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA-%E3%83%99%E3%82%A4%E3%82%BA%E6%8E%A8%E8%AB%96%E3%81%AB%E3%82%88%E3%82%8B%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92%E5%85%A5%E9%96%80-KS%E6%83%85%E5%A0%B1%E7%A7%91%E5%AD%A6%E5%B0%82%E9%96%80%E6%9B%B8-%E9%A0%88%E5%B1%B1-%E6%95%A6%E5%BF%97/dp/4061538322/ref=sr_1_1?keywords=%E3%83%99%E3%82%A4%E3%82%BA%E6%8E%A8%E8%AB%96%E3%81%AB%E3%82%88%E3%82%8B%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92%E5%85%A5%E9%96%80&amp;qid=1641542845&amp;sprefix=%E3%83%99%E3%82%A4%E3%82%BA%E6%8E%A8%E8%AB%96%2Caps%2C185&amp;sr=8-1">須山本</a>では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、<a href="https://www.amazon.co.jp/%E3%83%91%E3%82%BF%E3%83%BC%E3%83%B3%E8%AA%8D%E8%AD%98%E3%81%A8%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92-%E4%B8%8B-%E3%83%99%E3%82%A4%E3%82%BA%E7%90%86%E8%AB%96%E3%81%AB%E3%82%88%E3%82%8B%E7%B5%B1%E8%A8%88%E7%9A%84%E4%BA%88%E6%B8%AC-C-M-%E3%83%93%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97/dp/4621061240/ref=pd_lpo_1?pd_rd_i=4621061240&amp;psc=1">PRML</a>の12章を参考にしています。</p>
+<p>線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。</p>
+<ul>
+<li>PPCA, factor analysisは大体これと同じ</li>
+<li>ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う</li>
+</ul>
+<p>ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。</p>
+<h2 id="潜在変数の解釈">潜在変数の解釈</h2>
+<p>潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、</p>
+<ul>
+<li>ベイズ系の統計推測での潜在変数</li>
+<li>NNが隠れ層で学習する<a href="http://colah.github.io/posts/2014-03-NN-Manifolds-Topology/">多様体</a></li>
+<li>オートエンコーダの隠れ層</li>
+<li>スパースコーディングの成果物</li>
+<li>教師なし学習で事前学習する（していた）際の目的</li>
+<li>CNNのフィルタが学習するもの</li>
+<li>RNNが時系列で共有するもの（パラメータシェアリング）</li>
+</ul>
+<p>などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。</p>
+<p>この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。</p>
+<h2 id="実装">実装</h2>
+<h3 id="グラフィカルモデル">グラフィカルモデル</h3>
+<p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/model.jpg" alt="model"></p>
+<h3 id="観測データ">観測データ</h3>
+<p>$$
+\quad Y=[y_1,&hellip;,y_n] \quad y_n \in \mathbb{R}^D
+$$</p>
+<h3 id="潜在変数">潜在変数</h3>
+<p>$$
+\quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\
+\quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\
+\quad \mu \in \mathbb{R}^D
+$$</p>
+<h3 id="パラメータ">パラメータ</h3>
+<p>$$
+\quad \sigma^2_y \in \mathbb{R}^+ \\
+\Sigma_w \\
+\Sigma_{\mu}
+$$</p>
+<h3 id="個別の分布">個別の分布</h3>
+<p>$$
+p(\textbf{W}) = \prod^D_{d=1} N(\textbf{W}_d | \textbf{0}, \Sigma_w)
+$$</p>
+<p>$$
+p(\mu) = N(\mu | \textbf{0}, \Sigma_{\mu})
+$$</p>
+<p>$$
+p(\textbf{x}_n) = N(\textbf{x}_n | \textbf{0}, \textbf{I}_M)
+$$</p>
+<h3 id="textbfy_n-の条件付き分布">$\textbf{y}_n$ の条件付き分布</h3>
+<p>$$
+p(\textbf{y}_n | \textbf{x}_n, \textbf{W}, \mu) = N(\textbf{y}_n | \textbf{W}^T \textbf{x}_n + \mu, \sigma^2_y \textbf{I}_D) \
+$$</p>
+<h3 id="同時分布">同時分布</h3>
+<p>$$
+p(\textbf{Y}, \textbf{X}, \textbf{W}, \mu) = p(\textbf{W})p(\mu)\prod^N_{n=1}p(\textbf{y}_n | \textbf{x}_n, \textbf{W}, \mu)p(\textbf{x}_n) \
+$$</p>
+<h3 id="model">model</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_shape</span>(name, dist, sample_shape<span style="color:#f92672">=</span>()):
+    print(name, <span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#e6db74">&#34;event shape:&#34;</span>, dist<span style="color:#f92672">.</span>event_shape, <span style="color:#e6db74">&#34;batch shape:&#34;</span>, dist<span style="color:#f92672">.</span>batch_shape)
+    print(name, <span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#e6db74">&#34;sample shape&#34;</span>, dist<span style="color:#f92672">.</span>sample(key, sample_shape<span style="color:#f92672">=</span>sample_shape)<span style="color:#f92672">.</span>shape)
+    print(name, <span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#e6db74">&#34;whole shape:&#34;</span>, dist<span style="color:#f92672">.</span>shape(sample_shape<span style="color:#f92672">=</span>sample_shape))
+    <span style="color:#75715e"># print(name, &#34;:&#34;, &#34;sample&#34;, dist.sample(key, sample_shape=sample_shape))</span>
+    print(<span style="color:#e6db74">&#34;&#34;</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">model</span>(D, M, N, obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, debug<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):
+    <span style="color:#75715e"># mu</span>
+    loc_mu <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full(D, <span style="color:#ae81ff">0</span>) <span style="color:#75715e">#jax.random.normal(key, (D,))</span>
+    scale_mu <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full(D, <span style="color:#ae81ff">1</span>)
+    dist_mu <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>loc_mu, scale<span style="color:#f92672">=</span>scale_mu)<span style="color:#f92672">.</span>to_event()
+    mu <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;latent_mu&#34;</span>, dist_mu)
+    <span style="color:#66d9ef">if</span> (debug):
+        print_shape(<span style="color:#e6db74">&#34;dist_mu&#34;</span>, dist_mu)
+
+    <span style="color:#75715e"># W</span>
+    loc_W <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full((M, D), <span style="color:#ae81ff">0</span>) <span style="color:#75715e">#jax.random.normal(key, (M,D))</span>
+    scale_W <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full((M, D), <span style="color:#ae81ff">1</span>)
+    dist_W <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>loc_W, scale<span style="color:#f92672">=</span>scale_W)<span style="color:#f92672">.</span>to_event()
+    W <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;latent_W&#34;</span>, dist_W)
+    <span style="color:#66d9ef">if</span> (debug):
+        print_shape(<span style="color:#e6db74">&#34;dist_W&#34;</span>, dist_W)
+
+    <span style="color:#75715e"># X, latent</span>
+    loc_x <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full((N, M), <span style="color:#ae81ff">0</span>) <span style="color:#75715e">#jax.random.normal(key, (N,M))       </span>
+    scale_x <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full((N, M), <span style="color:#ae81ff">1</span>)        
+    dist_X <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>loc_x, scale<span style="color:#f92672">=</span>scale_x)
+    X <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;latent_x&#34;</span>, dist_X)
+    <span style="color:#66d9ef">if</span> (debug):
+        print_shape(<span style="color:#e6db74">&#34;dist_X&#34;</span>, dist_X)
+
+    <span style="color:#75715e"># Y</span>
+    loc_Y <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>zeros((N, D))
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N):
+        loc_Y <span style="color:#f92672">=</span> loc_Y<span style="color:#f92672">.</span>at[i]<span style="color:#f92672">.</span>set(jnp<span style="color:#f92672">.</span>dot(W<span style="color:#f92672">.</span>T, X[i]) <span style="color:#f92672">+</span> mu)
+    sacle_Y <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>full_like(loc_Y, <span style="color:#ae81ff">1</span>)
+    dist_Y <span style="color:#f92672">=</span> dist<span style="color:#f92672">.</span>Normal(loc<span style="color:#f92672">=</span>loc_Y, scale<span style="color:#f92672">=</span>sacle_Y)
+    Y <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>sample(<span style="color:#e6db74">&#34;Y_obs&#34;</span>, dist_Y, obs<span style="color:#f92672">=</span>obs)
+    <span style="color:#66d9ef">if</span> (debug):
+        print(<span style="color:#e6db74">&#34;sacle_Y.shape&#34;</span>, sacle_Y<span style="color:#f92672">.</span>shape)
+        print(<span style="color:#e6db74">&#34;loc_Y.shape&#34;</span>, loc_Y<span style="color:#f92672">.</span>shape)
+        print_shape(<span style="color:#e6db74">&#34;dist_Y&#34;</span>, dist_Y)
+
+D, M, N <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span><span style="color:#f92672">*</span><span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">10</span>
+print(<span style="color:#e6db74">&#34;D:&#34;</span>, D, <span style="color:#e6db74">&#34;M:&#34;</span>, M, <span style="color:#e6db74">&#34;N:&#34;</span>, N, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+prior_model_trace <span style="color:#f92672">=</span> handlers<span style="color:#f92672">.</span>trace(handlers<span style="color:#f92672">.</span>seed(model, key))
+prior_model_exec <span style="color:#f92672">=</span> prior_model_trace<span style="color:#f92672">.</span>get_trace(D<span style="color:#f92672">=</span>D, M<span style="color:#f92672">=</span>M, N<span style="color:#f92672">=</span>N, obs<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, debug<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</code></pre></div><h3 id="olivetti-face-dataset">olivetti face dataset</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
+<span style="color:#f92672">from</span> sklearn <span style="color:#f92672">import</span> datasets
+<span style="color:#f92672">from</span> skimage.transform <span style="color:#f92672">import</span> rescale
+<span style="color:#f92672">from</span> skimage <span style="color:#f92672">import</span> data, color
+
+data <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>fetch_olivetti_faces()
+df <span style="color:#f92672">=</span> pd<span style="color:#f92672">.</span>DataFrame(data<span style="color:#f92672">.</span>data)
+print(df<span style="color:#f92672">.</span>shape)
+df<span style="color:#f92672">.</span>head()
+
+N <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>
+img_res <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>
+
+rndidx <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(df<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>], N)
+imgs <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>zeros((len(rndidx), df<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(rndidx)):
+    imgs <span style="color:#f92672">=</span> imgs<span style="color:#f92672">.</span>at[i]<span style="color:#f92672">.</span>set(df<span style="color:#f92672">.</span>loc[rndidx[i]]<span style="color:#f92672">.</span>values)
+
+col, row <span style="color:#f92672">=</span> int(round(np<span style="color:#f92672">.</span>sqrt(N))), int(round(np<span style="color:#f92672">.</span>sqrt(N)))
+fig <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">10</span>))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, col<span style="color:#f92672">*</span>row<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>):
+    fig<span style="color:#f92672">.</span>add_subplot(row, col, i)
+    plt<span style="color:#f92672">.</span>gray() 
+    plt<span style="color:#f92672">.</span>imshow(imgs[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>reshape(img_res, img_res))
+    plt<span style="color:#f92672">.</span>grid(<span style="color:#66d9ef">None</span>)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output0.png" alt="model"></p>
+<h3 id="reduce-4096-to-0005-20">reduce 4096 to 0.005% (20)</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">D <span style="color:#f92672">=</span> imgs<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]
+M <span style="color:#f92672">=</span> int(round(imgs<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.005</span>))
+print(<span style="color:#e6db74">&#34;reduce&#34;</span>, D, <span style="color:#e6db74">&#34;to&#34;</span>, M)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">guide <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>infer<span style="color:#f92672">.</span>autoguide<span style="color:#f92672">.</span>AutoDelta(model)
+
+optimizer <span style="color:#f92672">=</span> numpyro<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0005</span>)
+svi <span style="color:#f92672">=</span> SVI(model, guide, optimizer, loss<span style="color:#f92672">=</span>Trace_ELBO())
+svi_result <span style="color:#f92672">=</span> svi<span style="color:#f92672">.</span>run(key, <span style="color:#ae81ff">2000</span>, D<span style="color:#f92672">=</span>D, M<span style="color:#f92672">=</span>M, N<span style="color:#f92672">=</span>N, obs<span style="color:#f92672">=</span>jnp<span style="color:#f92672">.</span>array(imgs))
+params <span style="color:#f92672">=</span> svi_result<span style="color:#f92672">.</span>params
+pp<span style="color:#f92672">.</span>pprint(params)
+</code></pre></div><h3 id="復元">復元</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">expected_mu <span style="color:#f92672">=</span> params[<span style="color:#e6db74">&#34;latent_mu_auto_loc&#34;</span>]
+expected_W <span style="color:#f92672">=</span> params[<span style="color:#e6db74">&#34;latent_W_auto_loc&#34;</span>]
+expected_x_n <span style="color:#f92672">=</span> params[<span style="color:#e6db74">&#34;latent_x_auto_loc&#34;</span>]
+print(<span style="color:#e6db74">&#34;expected_mu.shape&#34;</span>, expected_mu<span style="color:#f92672">.</span>shape)
+print(<span style="color:#e6db74">&#34;expected_W.shape&#34;</span>, expected_W<span style="color:#f92672">.</span>shape)
+print(<span style="color:#e6db74">&#34;expected_x_n.shape&#34;</span>, expected_x_n<span style="color:#f92672">.</span>shape)
+
+imgs_reconstructed <span style="color:#f92672">=</span> jnp<span style="color:#f92672">.</span>zeros((N, D))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(N):
+    x_n <span style="color:#f92672">=</span> expected_x_n[i]
+    imgs_reconstructed <span style="color:#f92672">=</span> imgs_reconstructed<span style="color:#f92672">.</span>at[i]<span style="color:#f92672">.</span>set(jnp<span style="color:#f92672">.</span>dot(expected_W<span style="color:#f92672">.</span>T, x_n) <span style="color:#f92672">+</span> expected_mu)
+
+col, row <span style="color:#f92672">=</span> int(round(np<span style="color:#f92672">.</span>sqrt(N))), int(round(np<span style="color:#f92672">.</span>sqrt(N)))
+fig <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">10</span>))
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, col<span style="color:#f92672">*</span>row<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>):
+    fig<span style="color:#f92672">.</span>add_subplot(row, col, i)
+    plt<span style="color:#f92672">.</span>imshow(imgs_reconstructed[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>reshape(img_res, img_res))
+    plt<span style="color:#f92672">.</span>grid(<span style="color:#66d9ef">None</span>)
+plt<span style="color:#f92672">.</span>gray()    
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output1.png" alt="model"></p>
+</section>
+
+  
+  
+  <footer class="post-tags">
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/%E7%B5%B1%E8%A8%88%E7%9A%84%E6%8E%A8%E6%B8%AC">統計的推測</a>
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/numpyro">numpyro</a>
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92">機械学習</a>
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/%E6%BD%9C%E5%9C%A8%E5%A4%89%E6%95%B0">潜在変数</a>
+     
+    <a href="https://akira-hayasaka.github.io/web/tags/latent-space">latent space</a>
+    
+  </footer>
+  
+
+  
+  
+  
+  <nav class="post-nav">
+     
+    <a class="next" href="https://akira-hayasaka.github.io/web/posts/bayesian_linreg/"><span>numpyroでベイズ線形回帰</span><span>→</span></a>
+    
+  </nav>
+  
+
+  
+  
+</article>
+
+</main>
+
+    <footer class="footer">
+  <p>&copy; 2022 <a href="https://akira-hayasaka.github.io/web/">Akira Hayasaka</a></p>
+  <p>Powered by <a href="https://gohugo.io/" rel="noopener" target="_blank">Hugo️️</a>️</p>
+  <p>
+    <a href="https://github.com/nanxiaobei/hugo-paper" rel="noopener" target="_blank">Paper 5.1</a>
+  </p>
+</footer>
+
+  </body>
+</html>

@@ -1,6 +1,6 @@
 ---
 title: "線形因子モデル"
-date: 2022-01-09T14:53:39+09:00
+date: 2022-01-09T14:23:39+09:00
 draft: false
 tags: ["統計的推測", "numpyro", "機械学習", "潜在変数", "latent space"]
 author: "akira"

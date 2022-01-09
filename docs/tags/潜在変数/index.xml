@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>統計的推測 on Akira Hayasaka</title>
-    <link>https://akira-hayasaka.github.io/web/tags/%E7%B5%B1%E8%A8%88%E7%9A%84%E6%8E%A8%E6%B8%AC/</link>
-    <description>Recent content in 統計的推測 on Akira Hayasaka</description>
+    <title>潜在変数 on Akira Hayasaka</title>
+    <link>https://akira-hayasaka.github.io/web/tags/%E6%BD%9C%E5%9C%A8%E5%A4%89%E6%95%B0/</link>
+    <description>Recent content in 潜在変数 on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Sun, 09 Jan 2022 14:23:39 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/%E7%B5%B1%E8%A8%88%E7%9A%84%E6%8E%A8%E6%B8%AC/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Jan 2022 14:23:39 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/%E6%BD%9C%E5%9C%A8%E5%A4%89%E6%95%B0/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>線形因子モデル</title>
       <link>https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/</link>
@@ -22,21 +22,6 @@
 実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&amp;hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
 潜在変数 $$ \quad X=[x_1,&amp;hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
 パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^+ \\ \Sigma_w \\ \Sigma_{\mu} $$</description>
-    </item>
-    
-    <item>
-      <title>numpyroでベイズ線形回帰</title>
-      <link>https://akira-hayasaka.github.io/web/posts/bayesian_linreg/</link>
-      <pubDate>Fri, 07 Jan 2022 14:32:23 +0900</pubDate>
-      
-      <guid>https://akira-hayasaka.github.io/web/posts/bayesian_linreg/</guid>
-      <description>線形回帰は全ての基本です。
-変分推論のロジックがわかったら、エグい計算はライブラリを使って避けたいです。
-model $$ \begin{align*} y_n &amp;amp; \in \mathbb{R} \qquad (output) \\ x_n &amp;amp; \in \mathbb{R}^M \quad e.g. (1,x,x^2,x^3) \qquad (input) \\ \textbf{w} &amp;amp; \in \mathbb{R}^M \qquad (parameter) \\ \epsilon_n &amp;amp; \in \mathbb{R} \qquad (noise) \end{align*} $$
-$$ y_n = \textbf{w}^T\textbf{x}_n + \epsilon_n \\ \epsilon_n \sim Norm(\epsilon_n|0,\lambda^{-1}) $$
-$$ p(\textbf{t},\textbf{w}|\textbf{x},\alpha^{-1},\beta^{-1}) = p(\textbf{w}|\alpha^{-1})\prod^{\textit{N}}_{n=1}p(\textit{t}_n|\textbf{w},\textit{x}_n,\beta^{-1}) $$
-$$ = Norm(\textbf{w}|0,\alpha^{-1})\prod^{\textit{N}}_{n=1}Norm(t_n|\textbf{w}^T\phi(\textit{x}_n),\beta^{-1}) $$
-scipy for modeling M = 3 def phi_basis_fn(x): result = [] result.append(1.0) for i in range(M-1): result.</description>
     </item>
     
   </channel>

@@ -6,7 +6,24 @@
     <description>Recent content in 機械学習 on Akira Hayasaka</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja-JP</language>
-    <lastBuildDate>Fri, 07 Jan 2022 12:59:05 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Jan 2022 14:23:39 +0900</lastBuildDate><atom:link href="https://akira-hayasaka.github.io/web/tags/%E6%A9%9F%E6%A2%B0%E5%AD%A6%E7%BF%92/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>線形因子モデル</title>
+      <link>https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/</link>
+      <pubDate>Sun, 09 Jan 2022 14:23:39 +0900</pubDate>
+      
+      <guid>https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/</guid>
+      <description>線形因子モデル 線形因子モデルは、goodfellow本ではその後に続く深層生成モデルの、須山本では第五章の応用モデルの、基礎を成しているとのことなので、やってみました。モデルとしては、PRMLの12章を参考にしています。
+線形因子モデルは、潜在変数に情報を詰め込んで、そこからデータを再現します。
+ PPCA, factor analysisは大体これと同じ ICAはローカルの潜在変数に独立を仮定し、ガウス分布以外の物を使う  ので、goodfellow本13章で紹介されている発展的なモデルも、これができればそんなに遠くない（はず）。
+潜在変数の解釈 潜在変数というのは、深層学習の文脈で表現（representation）や特徴（feature）と呼ばれるもので、
+ ベイズ系の統計推測での潜在変数 NNが隠れ層で学習する多様体 オートエンコーダの隠れ層 スパースコーディングの成果物 教師なし学習で事前学習する（していた）際の目的 CNNのフィルタが学習するもの RNNが時系列で共有するもの（パラメータシェアリング）  などなどは、同じイデアを共有していて、緩やかに繋がっているものだと理解しています。深層学習ではその潜在変数（=表現・特徴）がスパースであるほど統計的に意義がある（uniformに分布してると何も言えないから）かつその潜在変数を使った後続の回帰や分類タスクの精度が上がるので、そのスパース性を求めて様々な正則化が適用されます。
+この潜在変数をいかにうまく設計するかが、統計的推論・統計的機械学習のキモです。
+実装 グラフィカルモデル 観測データ $$ \quad Y=[y_1,&amp;hellip;,y_n] \quad y_n \in \mathbb{R}^D $$
+潜在変数 $$ \quad X=[x_1,&amp;hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
+パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^+ \\ \Sigma_w \\ \Sigma_{\mu} $$</description>
+    </item>
+    
     <item>
       <title>経験分布とは？</title>
       <link>https://akira-hayasaka.github.io/web/posts/empirical_dist/</link>
