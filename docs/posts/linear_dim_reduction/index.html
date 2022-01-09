@@ -105,7 +105,7 @@
 潜在変数 $$ \quad X=[x_1,&hellip;,x_n] \quad x_n \in \mathbb{R}^M \\ \quad \textbf{W} \in \mathbb{R}^{M \times D} \quad (\textbf{W}_d \in \mathbb{R}^M \quad W の d 番⽬の列ベクトル)\\ \quad \mu \in \mathbb{R}^D $$
 パラメータ $$ \quad \sigma^2_y \in \mathbb{R}^&#43; \\ \Sigma_w \\ \Sigma_{\mu} $$"><meta itemprop="datePublished" content="2022-01-09T14:23:39+09:00" />
 <meta itemprop="dateModified" content="2022-01-09T14:23:39+09:00" />
-<meta itemprop="wordCount" content="482">
+<meta itemprop="wordCount" content="488">
 <meta itemprop="keywords" content="統計的推測,numpyro,機械学習,潜在変数,latent space," />
   
   <meta name="twitter:card" content="summary"/>
@@ -394,6 +394,12 @@ plt<span style="color:#f92672">.</span>show()
 <p>ただこの場合、$W$の役割がよくわからない。$X$は各$x_i$に顔画像一枚のなんらかの情報をエンコードしてるんだろうけど、データ全体で共有される$W$は何を符号化したものなのか。（教えていただけると嬉しいです。）</p>
 <p><img src="https://akira-hayasaka.github.io/web/posts/linear_dim_reduction/output_w.png" alt="model"></p>
 <p>↑ が$W$を画像として表示したものです。それぞれの顔の特徴らしきものが見えるんだけど、、、</p>
+<h3 id="追記">追記</h3>
+<p>PRML 12.2.4によると、</p>
+<blockquote>
+<p>$W$の列ベクトルは観測変数同士の相関を捉える役割を担い、因子分析モデルの文献では因子負荷（factor loading）と呼ばれる。</p>
+</blockquote>
+<p>とのこと。よくわからんけどまぁいいか。</p>
 </section>
 
   
